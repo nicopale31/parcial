@@ -47,44 +47,52 @@ invocar_habilidad:
 	
 	
 
-.loop:
+loop:
 
 	cmp r12, 0
-	je .final
+	je final
 
-	mov r14, WORD [r12 + FANTASTRUCO_ENTRIES_OFFSET]
+	mov r14w, WORD [r12 + FANTASTRUCO_ENTRIES_OFFSET]
 
-.loopinterno:
-	cmp r14, rbx
+loopinterno:
+	
+	cmp r14w, bx
 	je siguientecarta
 
-	mov r15, [r12 + (FANTASTRUCO_DIR_OFFSET + rbx) *8]
+	mov r15, [r12 + FANTASTRUCO_DIR_OFFSET]
+	mov rcx, [r15 + 8* rbx] ; directorio actual
 	
 	mov rdi, [r15]
 	mov rsi, r13
 	
+	push rcx
+	sub rsp, 8
 	call strcmp
+	add rsp, 8
+	pop rcx
+
 	cmp rax, 0
-	je .llamarfuncionfinal
+	je llamarfuncionfinal
 
 	inc rbx
-	jmp .loopinterno
+	jmp loopinterno
 	
 	
 
 
-.siguientecarta:
+siguientecarta:
 
 	mov r12, [r12 + FANTASTRUCO_ARCHETYPE_OFFSET]
-	jmp .loop
+	xor rbx, rbx
+	jmp loop
 
 
-.llamarfuncionfinal:
+llamarfuncionfinal:
 
-	call [r15 + 16]
+	call [rcx + DIRENTRY_PTR_OFFSET]
 
 
-.final:
+final:
 
 	add rsp, 8
 	pop rbx
